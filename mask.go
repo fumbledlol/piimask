@@ -67,7 +67,7 @@ func MaskIP(ipStr string) string {
 		b := addr.As4()
 		var buf [24]byte
 		dst := strconv.AppendUint(buf[:0], uint64(b[0]), 10)
-		dst = append(dst, ".••.••."...) // ".••."
+		dst = append(dst, ".••.••."...)
 		dst = strconv.AppendUint(dst, uint64(b[3]), 10)
 		return string(dst)
 	}
@@ -98,7 +98,6 @@ func MaskToken(token string) string {
 	b.Grow(len(token) + 16)
 
 	if runeCount <= 8 {
-		// keep first 2 runes
 		written := 0
 		rem := token
 		for written < 2 && len(rem) > 0 {
@@ -111,9 +110,11 @@ func MaskToken(token string) string {
 		return b.String()
 	}
 
-	// keep first 4 runes
 	rem := token
-	for i := 0; i < 4 && len(rem) > 0; i++ {
+	for range 4 {
+		if len(rem) == 0 {
+			break
+		}
 		r, sz := utf8.DecodeRuneInString(rem)
 		b.WriteRune(r)
 		rem = rem[sz:]
@@ -121,7 +122,6 @@ func MaskToken(token string) string {
 
 	writeBullets(&b, runeCount-8)
 
-	// extract last 4 runes
 	tail := token
 	for utf8.RuneCountInString(tail) > 4 {
 		_, sz := utf8.DecodeRuneInString(tail)
@@ -141,7 +141,10 @@ func MaskDeviceID(token string) string {
 func MaskCreditCard(cardNumber string) string {
 	var digits [32]byte
 	count := 0
-	for i := 0; i < len(cardNumber) && count < len(digits); i++ {
+	for i := range len(cardNumber) {
+		if count >= len(digits) {
+			break
+		}
 		c := cardNumber[i]
 		if c >= '0' && c <= '9' {
 			digits[count] = c
@@ -169,7 +172,10 @@ func MaskPhone(phone string) string {
 	hasPlus := strings.HasPrefix(cleaned, "+")
 	var digits [32]byte
 	count := 0
-	for i := 0; i < len(cleaned) && count < len(digits); i++ {
+	for i := range len(cleaned) {
+		if count >= len(digits) {
+			break
+		}
 		c := cleaned[i]
 		if c >= '0' && c <= '9' {
 			digits[count] = c
@@ -208,7 +214,7 @@ func MaskPhone(phone string) string {
 }
 
 func writeBullets(b *strings.Builder, n int) {
-	for i := 0; i < n; i++ {
+	for range n {
 		b.WriteString(defaultBullet)
 	}
 }
